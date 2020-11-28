@@ -1,4 +1,4 @@
-
+![image info](./eb-blue-app.png)
 # Let's mess around with Elastic Beanstalk :seedling:
 
 ## Prologue
@@ -172,14 +172,22 @@ We can take advantage of our full control over the environment here. We have the
 (main)  $ git checkout green
 (green) $ eb init
 (green) $ eb create --single --instance-types t2.micro
+Enter Environment Name
+(default is elastic-beanstalk-sample-app-dev): elastic-beanstalk-sample-app-green
+Enter DNS CNAME prefix
+(default is elastic-beanstalk-sample-app-green):
+# Truncated...
 (green) $ eb use elastic-beanstalk-sample-app-green
-(green) $ eb deploy
 
 # Green version should be displayed in the title of the web app
 (green) $ eb open
 
 # Perform an environment swap
 (green) $ eb swap elastic-beanstalk-sample-app-green --destination_name elastic-beanstalk-sample-app-blue
+2020-11-28 19:14:16    INFO    swapEnvironmentCNAMEs is starting.
+2020-11-28 19:14:16    INFO    Swapping CNAMEs for environments 'elastic-beanstalk-sample-app-green' and 'elastic-beanstalk-sample-app-blue'.
+2020-11-28 19:14:21    INFO    'elastic-beanstalk-sample-app-blue.your-region.elasticbeanstalk.com' now points to '54.151.243.212'.
+2020-11-28 19:14:22    INFO    Completed swapping CNAMEs for environments 'elastic-beanstalk-sample-app-green' and 'elastic-beanstalk-sample-app-blue'.
 
 # Wait a couple of minutes then verify if "Blue version" is now showing "Green version"
 (green) $ git checkout main
