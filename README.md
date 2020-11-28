@@ -88,7 +88,8 @@ Printing Status:
 2020-11-28 17:11:16    INFO    Instance deployment completed successfully.
 ```
 Noticed that it still created an `Auto-scaling Group` but with `1:1:1` capacity settings (desired:min:max) just to guarantee that the single instance is **_always up and running_** for us. Cool, isn't it?  
-**:warning: Warning:** *This will **incur small charges** to your AWS account if you're not **Free Tier** eligible.*
+#### Warning :warning:
+This will **incur small charges** to your AWS account if you're not **Free Tier** eligible.
 
 ## Step 3. Verify your environment
 Monitor the deployment using `eb status`. Pay attention to **Status** and **Health** as they should dictate if the deployment has completed successfully.  
@@ -198,7 +199,10 @@ Enter DNS CNAME prefix
 (green) $ git checkout main
 (main)  $ eb open
 ```
-**Warning :warning::** As you know, terminating the entire EB environment also deletes all underlying resources that were created... including the database. As best practice, create your database outside of the EB environment and just source it as you would normally do in your code. And oh, since `Blue-Green` deployment utilizes a `CNAME` swap it's just natural to expect some respectable delays since it will have to propagate over the Public DNS. Okay, I think you should now be able to start picturing its advantages and disadvantages, including the right use cases to apply it. :+1:
+#### Warning :warning:
+As you know, terminating the entire EB environment also deletes all underlying resources that were created... **including the database**. As best practice, create your database outside of the EB environment and just source it as you would normally do in your code.
+<br /><br />
+And oh, since **Blue-Green deployment** utilizes a `CNAME` swap it's just natural to expect some respectable delays since it will have to propagate over the Public DNS. Okay, I think you should now be able to start picturing its advantages and disadvantages, including the right use cases to apply it. :+1:
 
 ### Blue version (First environment)
 ![Blue version](./images/eb-blue-app.png)
