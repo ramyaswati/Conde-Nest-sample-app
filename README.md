@@ -1,5 +1,5 @@
-![Blue version](./images/eb-banner.jpg)
 # Let's mess around with Elastic Beanstalk :seedling:
+![Blue version](./images/eb-banner.jpg)
 
 ## Prologue
 This repo houses a simple `Node` web app using [Mithril JS](expressjs.com/en/starter/hello-world.html) and [Express JS](https://expressjs.com/en/starter/hello-world.html) for the frontend and backend pieces. You should be able to read along the code and easily pick up what going on. We'll use this app to play around Beanstalk.
@@ -202,16 +202,22 @@ Enter DNS CNAME prefix
 
 ### Blue version (First environment)
 ![Blue version](./images/eb-blue-app.png)
+<br />
+**Note:** This is before swapping.
 
 ### Green version (Second environment)
 ![Green version](./images/eb-green-app.png)
+<br />
+**Note:** This is before swapping.
 
 ### Swapping environment URLs (Blue-Green deployment)
-_Note: Alternate option to CLI is through the Console:_
 ![Blue-Green deployment](./images/eb-blue-green-deployment.png)
+**Note:** An alternative to the `eb swap` is via the **Console**.
+
+<br /><br />
 Swapping the two environments involve switching their internal `CNAME` records. It is a type of resource in the underlying *DNS record set* which is in a Public zone. Basically, it is where our own client DNS will *resolve* into when we visit the web app in the browser.
 <br />
-You should expect to see the *Green version* reflect in your First environment minutes after a successful `CNAME` swap. :confetti_ball:
+You should expect to see the `Green` version reflect in your **First environment** a couple of minutes after a successful `CNAME` swap. :confetti_ball:
 
 ## 6. Cleaning Up
 As a **PaaS** itself, `Elastic Beanstalk` is capable of handling deletion quite well especially that it leverages and utilizes `CloudFormation` under the hood. You shouldn't directly delete any resources created by EB if you don't want to encounter **configuration drifts**. Let the platform do its job. :slightly_smiling_face:
