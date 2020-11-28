@@ -126,16 +126,19 @@ Here are some resources listed in  the `CloudFormation Stack`:
 &nbsp;&nbsp;:white_check_mark: `Auto-scaling Group` - maintains a single EC2 instance  
 &nbsp;&nbsp;:white_check_mark: `Elastic IP` - attaches to the instance to become publicly available in the Internet  
 &nbsp;&nbsp;:white_check_mark: `Security Group` - allows `HTTP/TCP` access on port 80
-<br />
+<br /><br />
 _Huh!?_ But why port `80`, if our `Node.js ` web server is listening to port `8081`? You have sharp eyes. Let's get back to that shortly...
 
 ### Elastic Beanstalk configuration settings
 Deploying our web apps became so much easier and that's because `EB` assumed a lot of [default configurations](https://docs.aws.amazon.com/elasticbeanstalk/latest/dg/command-options-general.html#command-options-general-elasticbeanstalkapplicationenvironment) for our environment. Of course, dealing with production apps will become much more *involved*. And for us to dabble into them:
-  * We define all sorts of configs using `JSON` or `YAML` format in `/.ebextensions/*.config`. It much end with `.config` extension.
-  * In fact, we sneakily defined env vars using `/.ebextensions/env_vars.config`. This is why `Node.js` picked up port `8081`.
+  * We define all sorts of configs using `JSON` or `YAML` format in `/.ebextensions/*.config`.
+  * In fact, we sneakily defined env vars using `/.ebextensions/env_vars.config`.
+  * This is why the `Node.js` app picked up port `8081`.
 
 ### 8081 vs 80
-With that set aside, **_Why can we talk to the web app if port doesn't match?_**  This detail is out of scope, but `Elastic Beanstalk` what's known as a `reverse proxy` using `nginx` or `Apache HTTPD` which listens to port `80` to map multiple applications and forward traffic to internal ports away from the client. Simply put, it enables us to use the same port (`80`) for multiple applications (`8080`, `8081`, `8082`, ...). See the [documentation](https://docs.aws.amazon.com/elasticbeanstalk/latest/dg/nodejs-platform-proxy.html) for more details.  
+With that set aside, **_Why can we talk to the web app if port doesn't match?_**  This detail is out of scope, but `Elastic Beanstalk` what's known as a `reverse proxy` using `nginx` or `Apache HTTPD` which listens to port `80` to map multiple applications and forward traffic to internal ports away from the client. Simply put, it enables us to use the same port (`80`) for multiple applications (`8080`, `8081`, `8082`, etc).  
+See the [documentation](https://docs.aws.amazon.com/elasticbeanstalk/latest/dg/nodejs-platform-proxy.html) for more details.  
+<br /><br />
 Enough networking. What if we want to make new changes into our web app? :raised_eyebrow:
 
 ## Step 4. Deploy new versions using common policies
@@ -215,10 +218,9 @@ And oh, since **Blue-Green deployment** utilizes a `CNAME` swap it's just natura
 **Note:** This is before swapping.
 
 ### Swapping environment URLs (Blue-Green deployment)
-![Blue-Green deployment](./images/eb-blue-green-deployment.png)
+![Blue-Green deployment](./images/eb-blue-green-deployment.png)  
 **Note:** An alternative to the `eb swap` is via the **Console**.
-
-<br /><br />
+<br />
 Swapping the two environments involve switching their internal `CNAME` records. It is a type of resource in the underlying *DNS record set* which is in a Public zone. Basically, it is where our own client DNS will *resolve* into when we visit the web app in the browser.
 <br />
 You should expect to see the `Green` version reflect in your **First environment** a couple of minutes after a successful `CNAME` swap. :confetti_ball:
