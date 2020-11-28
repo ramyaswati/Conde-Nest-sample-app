@@ -1,4 +1,4 @@
-![Blue version](./images/eb-blue-app.png)
+![Blue version](./images/eb-banner.jpg)
 # Let's mess around with Elastic Beanstalk :seedling:
 
 ## Prologue
@@ -9,7 +9,9 @@ This repo houses a simple `Node` web app using [Mithril JS](expressjs.com/en/sta
   * Deploy new versions into your environments using `mutable` and `immutable` **deployment policies**
   * Learn and perform `Blue-Green deployment`
   * Containerize your app using `Docker`
-  * Deploy a *containerized* app in 2 ways: 1) a local image based from a `Dockerfile`, 2) and a remote image hosted on `Docker Hub`
+  * Deploy a **containerized app** in two ways:
+    1. via image based from a `Dockerfile` (local)
+    1. via image hosted on `Docker Hub` (remote)
 
 ## Setting Up
   1. Configure your AWS credentials locally including the necessary IAM policies for `Elastic Beanstalk`.
@@ -34,7 +36,7 @@ Sample app listening on port 8080...
 **Tip:** For `Windows` users, set the env var using `$env:PORT=8080`.
 
 ### Step 1. Initialize your app from the root work directory
-Be sure to checkout `main` branch. Initialize the EB app using `eb init`. Select the appropriate region and platform (`Node.js`). Skip `CodeCommit` and `SSH settings`. We don't need them in this hands-on.
+Be sure to checkout `main` branch. Initialize the EB app using `eb init`. Select the appropriate **region** and **platform** (`Node.js`). Skip `CodeCommit` and `SSH settings`. We don't need them in this hands-on.
 ```bash
 (main) $ eb init
 Select a default region
@@ -57,10 +59,11 @@ Do you wish to continue with CodeCommit? (Y/n): n
 Do you want to set up SSH for your instances?
 (Y/n): n
 ```
-You will notice right away that it just generated a internal config file at `/.elasticbeanstalk/config.yml`. The EB service will use this local config throughout your dev workflow cycle. It doesn't create any resources for `Elastic Beanstalk` yet.
+You will notice right away that it just generated a internal config file at `/.elasticbeanstalk/config.yml`. It shall use this local config throughout your dev workflow cycle. It doesn't create any resources for `Elastic Beanstalk` yet.
 
 ### Step 2. Create your first environment
-Now that you have your app (`"elastic-beanstalk-sample-app"`), it's time to create your first environment. By default, `eb create` will prompt to build a standard `Elastic Load Balancer` + `Auto-scaling Group` with `1:1:4` capacity settings (desired:min:max) to guarantee that your app will always be running — **_we don't need that_**. Let's just spin-up a `single EC2 instance` to minimize costs using `--single`. To further save costs, run a very cheap instance such as `t2.micro` especially if you're `Free Tier` eligible.  
+Now that you have your app (`"elastic-beanstalk-sample-app"`), it's time to create your first environment. By default, `eb create` will prompt to build a standard `Elastic Load Balancer` + `Auto-scaling Group` with `1:1:4` capacity settings (desired:min:max) to guarantee that your app will always be running — **_we don't need that_**.  
+Let's just spin-up a `single EC2 instance` to minimize costs using `--single`. To further save costs, run a very cheap instance such as `t2.micro` especially if you're **Free Tier** eligible.  
 Let's call it `"elastic-beanstalk-sample-app-blue"` for now (_you'll find out later_).
 ```bash
 (main) $ eb create --single --instance-types t2.micro
@@ -75,7 +78,7 @@ Uploading elastic-beanstalk-sample-app/app-08a3-201129_010920.zip to S3. This ma
 Upload Complete.
 Environment details for: elastic-beanstalk-sample-app-blue
   Application name: elastic-beanstalk-sample-app
-  Region: ap-southeast-1
+  Region: your-region
   # Truncated...
 Printing Status:
 2020-11-28 17:09:24    INFO    createEnvironment is starting.
@@ -84,12 +87,12 @@ Printing Status:
 2020-11-28 17:11:10    INFO    Instance deployment: You didn't specify a Node.js version in the 'package.json' file in your source bundle. The deployment didn't install a specific Node.js version.
 2020-11-28 17:11:16    INFO    Instance deployment completed successfully.
 ```
-Noticed that it still created an `Auto-scaling Group` but with `1:1:1` capacity settings (desired:min:max) just to guarantee that the single instance is **_always up and running_** for us. Cool, isn'it?
-**:warning: Warning:** *This will **incur small charges** to your AWS account if you're not `Free Tier` eligible.*
+Noticed that it still created an `Auto-scaling Group` but with `1:1:1` capacity settings (desired:min:max) just to guarantee that the single instance is **_always up and running_** for us. Cool, isn't it?  
+**:warning: Warning:** *This will **incur small charges** to your AWS account if you're not **Free Tier** eligible.*
 
 ## Step 3. Verify your environment
 Monitor the deployment using `eb status`. Pay attention to **Status** and **Health** as they should dictate if the deployment has completed successfully.  
-You can also check it interactively through the `EB Console`. There are also tons of information available about the environment such as `Events` and `Logs`.
+You can also check it interactively through the `EB Console`. There are also tons of information available about the environment such as **Events** and **Logs**.
 ```bash
 (main) $ eb status
 Environment details for: elastic-beanstalk-sample-app-blue
@@ -116,11 +119,13 @@ Nov 28 17:11:16 ip-1-2-3-4 web: > node index.js
 Nov 28 17:11:16 ip-1-2-3-4 web: Sample app listening on port 8081...
 # Truncated...
 ```
-**Congratulations!** You've successfully deployed your first environment. One convenient way to open your app from CLI is via `eb open`.  
-Aside from navigating through these information, I recommend checking out the underlying resources that got created in order to truly appreciate the power of `Elastic Beanstalk` (and `CloudFormation` which is actually responsible for their creation). Here are some resources listed in  the `CloudFormation Stack`:  
-&nbsp;&nbsp;:white_check_mark: `Auto-scaling Group` - maintains a single EC2 instance
-&nbsp;&nbsp;:white_check_mark: `Elastic IP` - attaches to the instance to become publicly available in the Internet
-&nbsp;&nbsp;:white_check_mark: `Security Group` - allows `HTTP/TCP` access on port 80  
+**Congratulations, you've successfully deployed your first environment. :confetti_ball:** One convenient way to open your app from CLI is via `eb open`.  
+Aside from navigating through these information, I recommend checking out the underlying resources that got created in order to truly appreciate the power of `Elastic Beanstalk` (and `CloudFormation` which is actually responsible for their creation).  
+Here are some resources listed in  the `CloudFormation Stack`:  
+&nbsp;&nbsp;:white_check_mark: `Auto-scaling Group` - maintains a single EC2 instance  
+&nbsp;&nbsp;:white_check_mark: `Elastic IP` - attaches to the instance to become publicly available in the Internet  
+&nbsp;&nbsp;:white_check_mark: `Security Group` - allows `HTTP/TCP` access on port 80
+<br />
 _Huh!?_ But why port `80`, if our `Node.js ` web server is listening to port `8081`? You have sharp eyes. Let's get back to that shortly...
 
 ### Elastic Beanstalk configuration settings
@@ -195,9 +200,21 @@ Enter DNS CNAME prefix
 ```
 **Warning :warning::** As you know, terminating the entire EB environment also deletes all underlying resources that were created... including the database. As best practice, create your database outside of the EB environment and just source it as you would normally do in your code. And oh, since `Blue-Green` deployment utilizes a `CNAME` swap it's just natural to expect some respectable delays since it will have to propagate over the Public DNS. Okay, I think you should now be able to start picturing its advantages and disadvantages, including the right use cases to apply it. :+1:
 
+### Blue version (First environment)
+![Blue version](./images/eb-blue-app.png)
+
+### Green version (Second environment)
+![Green version](./images/eb-green-app.png)
+
+### Swapping environment URLs (Blue-Green deployment)
+_Note: Alternate option to CLI is through the Console:_
+![Blue-Green deployment](./images/eb-blue-green-deployment.png)
+Swapping the two environments involve switching their internal `CNAME` records. It is a type of resource in the underlying *DNS record set* which is in a Public zone. Basically, it is where our own client DNS will *resolve* into when we visit the web app in the browser.
+<br />
+You should expect to see the *Green version* reflect in your First environment minutes after a successful `CNAME` swap. :confetti_ball:
 
 ## 6. Cleaning Up
-As a `PaaS` itself, `Elastic Beanstalk` is capable of handling deletion quite well especially that it leverages and utilizes `CloudFormation` under the hood. You shouldn't directly delete any resources created by EB if you don't want to encounter `configuration drifts`. Let the platform do its job. :slightly_smiling_face:
+As a **PaaS** itself, `Elastic Beanstalk` is capable of handling deletion quite well especially that it leverages and utilizes `CloudFormation` under the hood. You shouldn't directly delete any resources created by EB if you don't want to encounter **configuration drifts**. Let the platform do its job. :slightly_smiling_face:
 ```bash
 # Option 1: Terminate specific environment
 $ eb terminate
