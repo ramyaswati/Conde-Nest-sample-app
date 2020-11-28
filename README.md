@@ -1,4 +1,4 @@
-![image info](./eb-blue-app.png)
+![Blue version](./images/eb-blue-app.png)
 # Let's mess around with Elastic Beanstalk :seedling:
 
 ## Prologue
