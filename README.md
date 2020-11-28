@@ -303,6 +303,10 @@ Run `eb create --single --instance-types t2.micro` again then EB should **build 
 You might have also noticed that I've changed `/.ebextensions/env_vars.config` to match the `PORT` environment to `8080` in the `Dockerfile`. Not that it matters to be honest, because again with `Docker` we've defined the port as part of its config. `env_vars.config` is just here to demonstrate EB-specific config we can do, but it's not essential for this section.
 
 Feel free to `eb terminate --all` after playing for awhile.
+#### Your first Docker app on Elastic Beanstalk
+**Congratulations, you've successfully containerized and deployed your app. Way to go! :confetti_ball:**
+<br />
+![Docker app](./images/eb-docker-app.png)
 
 ### 3. Create your environment using remote Docker image (Docker Hub)
 With the previous step, we tasked EB to build the image inside the EC2 instance using the `Dockerfile` as part of the initialization/deployment. You will notice that we still have the **entire codebase** that is necessary to build the `Docker image`. We can go one step further to leverage `Docker` by deploying a hosted image in some known **container registry** such as [Docker Hub](https://hub.docker.com/) which **containerizes** our, well, `config` and `code`.
