@@ -1,5 +1,5 @@
 # Let's mess around with Elastic Beanstalk :seedling:
-![Blue version](./images/eb-banner.jpg)
+![EB Banner](./images/eb-banner.jpg)
 
 ## Prologue
 This repo houses a simple `Node` web app using [Mithril JS](expressjs.com/en/starter/hello-world.html) and [Express JS](https://expressjs.com/en/starter/hello-world.html) for the frontend and backend pieces. You should be able to read along the code and easily pick up what going on. We'll use this app to play around Beanstalk.
@@ -136,7 +136,7 @@ Deploying our web apps became so much easier and that's because `EB` assumed a l
   * This is why the `Node.js` app picked up port `8081`.
 
 ### 8081 vs 80
-With that set aside, **_Why can we talk to the web app if port doesn't match?_**  This detail is out of scope, but `Elastic Beanstalk` what's known as a `reverse proxy` using `nginx` or `Apache HTTPD` which listens to port `80` to map multiple applications and forward traffic to internal ports away from the client. Simply put, it enables us to use the same port (`80`) for multiple applications (`8080`, `8081`, `8082`, etc).  
+With that set aside, **_why can we talk to the web app if ports don't match?_**  This detail is out of scope, but `Elastic Beanstalk` what's known as a `reverse proxy` using `nginx` or `Apache HTTPD` which listens to port `80` to map multiple applications and forward traffic to internal ports away from the client. Simply put, it enables us to use the same port (`80`) for multiple applications (`8080`, `8081`, `8082`, etc).  
 See the [documentation](https://docs.aws.amazon.com/elasticbeanstalk/latest/dg/nodejs-platform-proxy.html) for more details.  
 <br /><br />
 Enough networking. What if we want to make new changes into our web app? :raised_eyebrow:
@@ -298,14 +298,23 @@ Do you want to set up SSH for your instances?
 ```
 
 ### 2. Create your environment using local Dockerfile
-Run `eb create --single` again then EB should build the image from the `Dockerfile` which also defines all the config including commands to start the app and port to expose. You noticed that I've changed `/.ebextensions/env_vars.config` to match the `PORT` environment to `8080` in the `Dockerfile`. Not that it matters to be honest, because again with `Docker` we've defined the port as part of its config. `env_vars.config` is just here to demonstrate EB-specific config we can do, but it's not essential for this section.
+Run `eb create --single --instance-types t2.micro` again then EB should **build the image on-the-fly** from the `Dockerfile` which also defines all the necessary config including commands to start the app and port to expose.
+<br />
+You might have also noticed that I've changed `/.ebextensions/env_vars.config` to match the `PORT` environment to `8080` in the `Dockerfile`. Not that it matters to be honest, because again with `Docker` we've defined the port as part of its config. `env_vars.config` is just here to demonstrate EB-specific config we can do, but it's not essential for this section.
 
 Feel free to `eb terminate --all` after playing for awhile.
 
 ### 3. Create your environment using remote Docker image (Docker Hub)
-With the previous step, we tasked EB to build the image inside the EC2 instance using the `Dockerfile` as part of the initialization/deployment. You will notice that we still have the entire codebase that is necessary to build the `Docker image`. We can go one step further to leverage `Docker` by deploying a hosted image in some registry such as [Docker Hub](https://hub.docker.com/) which **containerizes** our, well, `config` and `code`. Checkout `dockerized-remote` branch then you'll see that there aren't pretty much files left other than this special file: `Dockerrun.aws.json`. This must sit at the root project directory since EB will use this to be able to pull any images including additional configurations. I have containerized the entire app and pushed the image into [maronavenue/beanstalk-sample-app:latest](https://hub.docker.com/r/maronavenue/beanstalk-sample-app). It's a public image on `Docker Hub` that can readily be used via `docker pull maronavenue/beanstalk-sample-app`. Alright sir, standard operating procedures!
+With the previous step, we tasked EB to build the image inside the EC2 instance using the `Dockerfile` as part of the initialization/deployment. You will notice that we still have the **entire codebase** that is necessary to build the `Docker image`. We can go one step further to leverage `Docker` by deploying a hosted image in some known **container registry** such as [Docker Hub](https://hub.docker.com/) which **containerizes** our, well, `config` and `code`.
+<br />
+
+Checkout `dockerized-remote` branch then you'll see that there aren't pretty much files left other than this special file: `Dockerrun.aws.json`. This must sit at the root project directory since EB will use this to be able to pull any images including additional configurations.
+#### Docker Hub (Remote image)
+![Docker Hub](./images/docker-hub-image.png)
+<br />
+I have **containerized** the entire app and pushed the image into [maronavenue/beanstalk-sample-app:latest](https://hub.docker.com/r/maronavenue/beanstalk-sample-app). It's a public image on `Docker Hub` that can be readily used via `docker pull maronavenue/beanstalk-sample-app`. Alright sir, standard operating procedures!
 ```bash
-(dockerized-remote) $ eb create --single
+(dockerized-remote) $ eb create --single --instance-types t2.micro
 Enter Environment Name
 (default is elastic-beanstalk-sample-app-dev): elastic-beanstalk-sample-app-dockerized
 Enter DNS CNAME prefix
