@@ -127,7 +127,7 @@ Here are some resources listed in  the `CloudFormation Stack`:
 &nbsp;&nbsp;:white_check_mark: `Elastic IP` - attaches to the instance to become publicly available in the Internet  
 &nbsp;&nbsp;:white_check_mark: `Security Group` - allows `HTTP/TCP` access on port 80
 <br /><br />
-_Huh!?_ But why port `80`, if our `Node.js ` web server is listening to port `8081`? You have sharp eyes. Let's get back to that shortly...
+**_Huh!?_ But why port `80`, if our `Node.js ` web server is listening to port `8081`?** You have sharp eyes :eyes:. Let's get back to that shortly...
 
 ### Elastic Beanstalk configuration settings
 Deploying our web apps became so much easier and that's because `EB` assumed a lot of [default configurations](https://docs.aws.amazon.com/elasticbeanstalk/latest/dg/command-options-general.html#command-options-general-elasticbeanstalkapplicationenvironment) for our environment. Of course, dealing with production apps will become much more *involved*. And for us to dabble into them:
@@ -249,12 +249,13 @@ Removing application versions from s3.
 2020-11-27 17:23:44    INFO    The application has been deleted successfully.
 ```
 
-## Single-container configurations using Docker
-We previously learned how to deploy simple web apps using `Node.js` as the platform. It's okay and all, but what if we can ship our entire `config` together with our `code`? Enter `Elastic Beanstalk :seedling:` and `Docker :whale2:`!
+## Single-container configurations using Docker :whale2:
+We previously learned how to deploy simple web apps using `Node.js` as the platform. It's okay and all, but what if we can ship our entire `config` together with our `code`? Enter `Elastic Beanstalk` and `Docker`.
 
 Time to containerize our app! :package:
+
 ### 0. Test sample app locally with Docker
-Checkout `dockerized` branch then run the ff. commands. Here's a brief `Docker` crash course:
+Checkout `dockerized` branch then run the ff. commands. Here's a brief **Docker crash course**:
 ```bash
 # To check for running containers
 (dockerized) $ docker ps
