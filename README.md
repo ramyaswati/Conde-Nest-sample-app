@@ -135,6 +135,7 @@ Here are some resources tracked by the **CloudFormation Stack**:
   - [x] `Auto-scaling Group` - maintains a single EC2 instance
   - [x] `Elastic IP` - attaches to the instance to become publicly available in the Internet
   - [x] `Security Group` - allows `HTTP/TCP` access on port `80`
+
 **_Huh!?_ But why port `80` if our `Node.js ` web server is listening to port `8081`?**
 
 You have sharp eyes :eyes:. Let's get back to that shortly...
@@ -155,7 +156,9 @@ Read up the [documentation](https://docs.aws.amazon.com/elasticbeanstalk/latest/
 Enough networking. What if we want to make new changes into our web app? :raised_eyebrow:
 
 ## Step 4. Deploy new versions using common policies
-EB uses `All-At-Once` as the default deployment policy which directly deploys the changes into the instance/s, hence the app is expected to go **_out-of-service_** until the deployment has completed. By nature of changing the same running instance/s, we define this as **_"mutable"_**. There are other similar mutable deployments such as `Rolling`, but we'll take a look at `Immutable` in this example. Deployment policy can be configured in `/.ebextensions/` (_you guessed right_).
+EB uses `All-At-Once` as the default deployment policy which directly deploys the changes into the instance/s, hence the app is expected to go **_out-of-service_** until the deployment has completed. By nature of changing the same running instance/s, we define this as **_"mutable"_**. There are other similar mutable deployments such as `Rolling`, but we'll take a look at `Immutable` in this example.
+
+Deployment policy can be configured in `/.ebextensions/` (_you guessed right_).
 
 ### Step 4.a. Immutable
 You will notice that there's already an `/.ebextensions/deployment_policy.config`. Yes, you don't have to do anything since the policy was already overridden to `Immutable`. Modify `/public/app.js` to simulate a change in the frontend. Be sure to commit and push your changes prior to actual deployment. Deploy the changes in the current environment using `eb deploy`.
@@ -171,12 +174,20 @@ Upload Complete.
 2020-11-27 15:59:03    INFO    Instance deployment: You didn't specify a Node.js version in the 'package.json' file in your source bundle. The deployment didn't install a specific Node.js version.
 2020-11-27 15:59:10    INFO    Instance deployment completed successfully.
 ```
-**_...Takes a while right?_** Go get some `coffee` :coffee: while waiting. Cheers. Anyway, here's where `Immutable` shines: It does not touch your running instance/s within the existing `Auto-scaling group`. Instead, it creates an entirely new yet temporariy `Auto-scaling group` for the updated instance/s and then transfers them to the original group once all their health checks have passed. `This is why it's noticably longer (and is guaranteed to cost a bit more)`, but you can imagine how easy it is to rollback automatically when things go wrong unlike with `Mutable` deployments. There is no `downtime` as well. Personally, I like this deployment policy for my `production-grade` applications. :+1:
+**_...Takes a while right?_** Go get some `coffee` :coffee: while waiting. Cheers.
+
+Anyway, here's where `Immutable` shines — it does not touch your running instance/s within the existing `Auto-scaling group`. Instead, it creates an entirely new, yet temporariy `Auto-scaling group` for the updated instance/s and then transfers them back to the original group once all their health checks have passed.
+
+This is why it's noticably longer (and will cost us a bit more), but you can imagine how easy it is to rollback automatically when things go wrong unlike with mutable deployments.
+
+There is **no downtime** as well. Personally, I like this deployment policy for my production-grade applications. :+1:
 
 ### 4.b. All-At-Once
-I know we glossed over this guy, but just `git rm /.ebextensions/deployment_policy.config` then modify `/public/app.js` again for yet another change. Please keep the "Blue version" in the `h1` title as is for now, okay? We'll use that to demonstrate the next section. Again, don't forget to **commit and push** your changes so `EB` will recognize them then hit `eb deploy`.  
-You will eventually notice that it's way faster, but your app goes down for a bit of time. This deployment policy is okay if you or your users can tolerate downtime. This is the most cost-effective deployment too.  
-I like to standby on the `EC2 Console` just to compare how both deployment policies take down the running instances. Try it too.
+I know we glossed over this guy, but just `git rm /.ebextensions/deployment_policy.config` then modify `/public/app.js` again for yet another change. Please keep the "Blue version" in the `h1` title as is for now, okay? We'll use that to demonstrate the next section. Again, don't forget to **commit and push** your changes so `EB` will recognize them then hit `eb deploy`.
+
+You will eventually notice that it's way faster, but your app goes down for a bit of time. This deployment policy is okay if you or your users **can tolerate downtime**. This is the most cost-effective deployment too.
+
+I like to standby on the `EC2 Console` just to compare how both deployment policies take down the running instances. `Try it too.`
 
 ## 5. Blue-Green Deployment
 Now that we're at the topic of `Immutable` deployments, we can see and understand that it operates **within the context of running instances**. Now, let's look at the bigger picture: how about we look at our project **within the context of environments**?  
