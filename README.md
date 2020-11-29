@@ -182,14 +182,14 @@ This is why it's noticably longer (and will cost us a bit more), but you can ima
 
 There is **no downtime** as well. Personally, I like this deployment policy for my production-grade applications. :+1:
 
-### 4.b. All-At-Once
+### Step 4.b. All-At-Once
 I know we glossed over this guy, but just `git rm /.ebextensions/deployment_policy.config` then modify `/public/app.js` again for yet another change. Please keep the "Blue version" in the `h1` title as is for now, okay? We'll use that to demonstrate the next section. Again, don't forget to **commit and push** your changes so `EB` will recognize them then hit `eb deploy`.
 
 You will eventually notice that it's way faster, but your app goes down for a bit of time. This deployment policy is okay if you or your users **can tolerate downtime**. This is the most cost-effective deployment too.
 
 I like to standby on the `EC2 Console` just to compare how both deployment policies take down the running instances. `Try it too.`
 
-## 5. Blue-Green Deployment :ballot_box_with_check::white_check_mark:
+## Step 5. Blue-Green Deployment :ballot_box_with_check::white_check_mark:
 Now that we're at the topic of `Immutable` deployments, we can see and understand that it operates **within the context of running instances**. Now, let's look at the bigger picture: how about we look at our project **within the context of environments**?
 
 _It suddenly changes things._ We can now logically say that it is **no longer** `Immutable` because it makes changes into the **same environment**, albeit it creates new `Auto-scaling groups` inside.
@@ -197,15 +197,15 @@ _It suddenly changes things._ We can now logically say that it is **no longer** 
 ### How it works
 **Blue-Green Deployment** is a general modern paradigm that is outside of `Elastic Beanstalk`'s features. It introduces a new, second environment — called `"Green"`. We'll call the first environment `"Blue"`. We'll deploy everything into our **Green environment** as if it's a completely separate app and then swap its `CNAME` with the **Blue environment** once we're happy with the results.
 
-We can take advantage of our full control over the environment here. We have the option to observe it for several days. We could also synergize with `Route53` in order to gradually distribute traffic using `weighted routing policy`, e.g. 90%-10% in the first week to manage user impact gracefully. It's up to us how long we should keep the other environment up and running. Heck, we can even terminate it immediately after the swap or the weighted routing goes to a 100%. Point is, rollback is within our hands.
-### Let's try it out
+We can take advantage of our full control over the environment here. We have the option to observe it for several days. We could also synergize with `Route53` in order to gradually distribute traffic using `weighted routing policy`, e.g. 90%-10% in the first week to manage user impact gracefully. It's up to us how long we should keep the other environment up and running. Heck, we can even terminate it immediately after the swap or the weighted routing goes to a 100%. Point is, **rollback is within our hands**.
+
+### Step 5.a. Creating your second environment (Green version)
+Since we're going to deal with multiple environments, let's inform `EB` by linking our first environment (Blue version) to our current `main` branch. Then, we checkout the `green` branch which contains the Green version that we shall deploy into a second environment:
 ```bash
-# Link your first environment (Blue) to the current branch
+# Link your first environment (Blue) to the main branch
 # This just tells EB to deploy into this environment when making changes into this branch
 (main)  $ eb use elastic-beanstalk-sample-app-blue
 
-# Create and link your second environment (Green) using the 'green' branch
-# Linking is just simply being tracked by EB in: /.elasticbeanstalk/config.yml
 (main)  $ git checkout green
 (green) $ eb init
 (green) $ eb create --single --instance-types t2.micro
@@ -214,11 +214,27 @@ Enter Environment Name
 Enter DNS CNAME prefix
 (default is elastic-beanstalk-sample-app-green):
 # Truncated...
+
+# Link your second environment (Green) to the green branch
+# Linking is just simply being tracked by EB in: /.elasticbeanstalk/config.yml, nothing more
 (green) $ eb use elastic-beanstalk-sample-app-green
 
 # Green version should be displayed in the title of the web app
 (green) $ eb open
+```
 
+### Step 5.b. Swapping environment URLs (Blue-Green deployment)
+
+
+### Step 5.c. Swapping environment URLs (Blue-Green deployment)
+![Blue-Green deployment](./images/eb-blue-green-deployment.png)  
+**Note:** An alternative to the `eb swap` is via the **Console**.
+<br />
+Swapping the two environments involve switching their internal `CNAME` records. It is a type of resource in the underlying *DNS record set* which is in a Public zone. Basically, it is where our own client DNS will *resolve* into when we visit the web app in the browser.
+<br />
+You should expect to see the `Green` version reflect in your **First environment** a couple of minutes after a successful `CNAME` swap. :confetti_ball: 
+
+```bash
 # Perform an environment swap
 (green) $ eb swap elastic-beanstalk-sample-app-green --destination_name elastic-beanstalk-sample-app-blue
 2020-11-28 19:14:16    INFO    swapEnvironmentCNAMEs is starting.
@@ -230,6 +246,7 @@ Enter DNS CNAME prefix
 (green) $ git checkout main
 (main)  $ eb open
 ```
+
 #### Warning :warning:
 As you know, terminating the entire EB environment also deletes all underlying resources that were created... **including the database**. As best practice, create your database outside of the EB environment and just source it as you would normally do in your code.
 <br /><br />
@@ -245,13 +262,6 @@ And oh, since **Blue-Green deployment** utilizes a `CNAME` swap it's just natura
 <br />
 **Note:** This is before swapping.
 
-### Swapping environment URLs (Blue-Green deployment)
-![Blue-Green deployment](./images/eb-blue-green-deployment.png)  
-**Note:** An alternative to the `eb swap` is via the **Console**.
-<br />
-Swapping the two environments involve switching their internal `CNAME` records. It is a type of resource in the underlying *DNS record set* which is in a Public zone. Basically, it is where our own client DNS will *resolve* into when we visit the web app in the browser.
-<br />
-You should expect to see the `Green` version reflect in your **First environment** a couple of minutes after a successful `CNAME` swap. :confetti_ball:
 
 ## 6. Cleaning Up
 As a **PaaS** itself, `Elastic Beanstalk` is capable of handling deletion quite well especially that it leverages and utilizes `CloudFormation` under the hood. You shouldn't directly delete any resources created by EB if you don't want to encounter **configuration drifts**. Let the platform do its job. :slightly_smiling_face:
