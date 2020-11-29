@@ -36,7 +36,9 @@ Sample app listening on port 8080...
 **Tip:** For `Windows` users, set the env var using `$env:PORT=8080`.
 
 ### Step 1. Initialize your app from the root work directory
-Be sure to checkout `main` branch. Initialize the EB app using `eb init`. Select the appropriate **region** and **platform** (`Node.js`). Skip `CodeCommit` and `SSH settings`. We don't need them in this hands-on.
+In the `main` branch, initialize the app using `eb init`. Select the appropriate **region** and **platform** (`Node.js`). Skip `CodeCommit` and `SSH settings`. We don't need them in this hands-on.
+<br />
+We can use the default name: `"elastic-beanstalk-sample-app"`.
 ```bash
 (main) $ eb init
 Select a default region
@@ -59,10 +61,14 @@ Do you wish to continue with CodeCommit? (Y/n): n
 Do you want to set up SSH for your instances?
 (Y/n): n
 ```
-You will notice right away that it just generated a internal config file at `/.elasticbeanstalk/config.yml`. It shall use this local config throughout your dev workflow cycle. It doesn't create any resources for `Elastic Beanstalk` yet.
+You will notice right away that it just generated an internal file: `/.elasticbeanstalk/config.yml`. It will use this local config throughout your dev workflow cycle. It doesn't create any resources for `Elastic Beanstalk` yet.
 
 ### Step 2. Create your first environment
-Now that you have your app (`"elastic-beanstalk-sample-app"`), it's time to create your first environment. By default, `eb create` will prompt to build a standard `Elastic Load Balancer` + `Auto-scaling Group` with `1:1:4` capacity settings (desired:min:max) to guarantee that your app will always be running — **_we don't need that_**.  
+Time to create your **first environment**. By default, `eb create` will prompt you to create a `LoadBalanced` environment with these settings:
+  * `Elastic Load Balancer` - fronts your app to receive all the clients requests and forwards to your instances
+  * `Auto-scaling Group` - maintains `1:1:4` capacity settings (desired:min:max) to guarantee that your app will always be running
+**_we don't need that_**.
+
 Let's just spin-up a `single EC2 instance` to minimize costs using `--single`. To further save costs, run a very cheap instance such as `t2.micro` especially if you're **Free Tier** eligible.  
 Let's call it `"elastic-beanstalk-sample-app-blue"` for now (_you'll find out later_).
 ```bash
