@@ -318,8 +318,8 @@ In **Dockerland**, there are essentially `images` and `containers`. And they are
   * **Dockerfile** - A **DSL** containing all the definitions to build an image. Think `source code`.
   * **Image** - A frozen, immutable snapshot/template for creating containers. Think `Class`.
   * **Container** - A running instance of an image. Think `Object`.
-  
-There are obviously a lot more going on here, but to pop out of the analogy: The **images**, of course, contains the source code, libraries, dependencies, tools and commands necessary to execute an app or service. We describe all of them in the `Dockerfile`. Quite interestingly, you'll often source your own image from another **base image** such as `ubuntu` or `node` or `python`. Furthermore, people can also use **your own image as their base image**. What's left to do is use and run them.
+
+There are obviously a lot more going on here, but to pop out of the analogy: The **images**, of course, contains the source code, libraries, dependencies, tools and commands necessary to execute an app or service. We describe all of them in the `Dockerfile`. Quite interestingly, you'll often source from another **base image** such as `ubuntu` or `node` or `python` in your own image. Furthermore, people can also use **your own image as their base image**. What's left to do is use and run them.
 
 A **container** is ultimately a **running image**. They are guaranteed to absolutely behave exactly the same way in anybody's machine no matter if they're using `Windows` or `Mac`... for as long as they have `Docker` installed. And that is (one of the) power of containerization. :package:
 
