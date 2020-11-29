@@ -94,10 +94,10 @@ Printing Status:
 2020-11-28 17:11:16    INFO    Instance deployment completed successfully.
 ```
 Notice that it still created an `Auto-scaling Group` but with `1:1:1` capacity settings just to guarantee that the single instance is **_always up and running_** for us. Cool, isn't it?  
-#### Warning :warning:
+##### Warning :warning:
 This will **incur small charges** to your AWS account if you're not **Free Tier** eligible.
 
-## Step 3. Verify your environment
+### Step 3. Verify your environment
 Monitor the deployment using `eb status`. Pay attention to **Status** and **Health** as they should indicate if the it has completed successfully.
 
 You can also check it interactively through the `EB Console`. There are also tons of information available about the environment such as **Events** and **Logs**.
@@ -128,7 +128,7 @@ Nov 28 17:11:16 ip-1-2-3-4 web: Sample app listening on port 8081...
 # Truncated...
 ```
 
-### Congratulations, you've successfully deployed your first environment. :confetti_ball:
+#### Congratulations, you've successfully deployed your first environment. :confetti_ball:
 One convenient way to open your app from CLI is via `eb open`. Aside from navigating through these information, I recommend checking out the underlying resources that got created in order to truly appreciate the power of `Elastic Beanstalk` (and `CloudFormation` which is actually responsible for their creation).
 
 Here are some resources tracked by the **CloudFormation Stack**:
@@ -140,13 +140,13 @@ Here are some resources tracked by the **CloudFormation Stack**:
 
 You have sharp eyes :eyes:. Let's get back to that shortly...
 
-### Elastic Beanstalk configuration settings
+#### Elastic Beanstalk configuration settings
 Deploying our web apps became so much easier and that's because `EB` assumed a lot of [default configurations](https://docs.aws.amazon.com/elasticbeanstalk/latest/dg/command-options-general.html#command-options-general-elasticbeanstalkapplicationenvironment) for our environment. Of course, dealing with production apps will become much more *involved*. And for us to dabble into them:
   * We define all sorts of configs using `JSON` or `YAML` format in `/.ebextensions/*.config`.
   * In fact, we sneakily defined env vars using `/.ebextensions/env_vars.config`.
   * This is why the `Node.js` app picked up port `8081`.
 
-### 8081 vs 80
+#### 8081 vs 80
 With that set aside, **_why can we talk to the web app if ports don't match?_**
 
 This detail is out of scope, but `Elastic Beanstalk` uses what's known as a **reverse proxy server** using `nginx` or `Apache HTTPD` which listens to port `80` to map multiple applications and forward traffic using different internal ports that are abstracted from the client side. Simply put, it enables us to use the same port (`80`) for multiple applications listening to different ports (`8080`, `8081`, `8082`, etc) in the same server.
@@ -155,12 +155,12 @@ Read up the [documentation](https://docs.aws.amazon.com/elasticbeanstalk/latest/
 
 Enough networking. What if we want to make new changes into our web app? :raised_eyebrow:
 
-## Step 4. Deploy new versions using common policies
+### Step 4. Deploy new versions using common policies
 EB uses `All-At-Once` as the default deployment policy which directly deploys the changes into the instance/s, hence the app is expected to go **_out-of-service_** until the deployment has completed. By nature of changing the same running instance/s, we define this as **_"mutable"_**. There are other similar mutable deployments such as `Rolling`, but we'll take a look at `Immutable` in this example.
 
 Deployment policy can be configured in `/.ebextensions/` (_you guessed right_).
 
-### Step 4.a. Immutable
+#### Step 4.a. Immutable
 You will notice that there's already an `/.ebextensions/deployment_policy.config`. Yes, you don't have to do anything since the policy was already overridden to `Immutable`. Modify `/public/app.js` to simulate a change in the frontend. Be sure to commit and push your changes prior to actual deployment. Deploy the changes in the current environment using `eb deploy`.
 ```bash
 (master) $ eb deploy
@@ -182,24 +182,24 @@ This is why it's noticably longer (and will cost us a bit more), but you can ima
 
 There is **no downtime** as well. Personally, I like this deployment policy for my production-grade applications. :+1:
 
-### Step 4.b. All-At-Once
+#### Step 4.b. All-At-Once
 I know we glossed over this guy, but just `git rm /.ebextensions/deployment_policy.config` then modify `/public/app.js` again for yet another change. Please keep the "Blue version" in the `h1` title as is for now, okay? We'll use that to demonstrate the next section. Commit and push your changes then hit `eb deploy`.
 
 You will eventually notice that it's way faster, but your app goes down for a bit of time. This deployment policy is okay if you or your users **can tolerate downtime**. This is the most cost-effective deployment too.
 
 I like to standby on the `EC2 Console` just to compare how both deployment policies take down the running instances. `Try it too.`
 
-## Step 5. Blue-Green Deployment :ballot_box_with_check::white_check_mark:
+### Step 5. Blue-Green Deployment :ballot_box_with_check::white_check_mark:
 With `Immutable` deployments, we can see and understand that it operates **within the context of running instances**. Now, let's look at the bigger picture: how about we look at our project **within the context of environments**?
 
 _It suddenly changes things, right?_ We can now logically say that it is **no longer** `Immutable` because it makes changes into the **same environment**, albeit it creates a new temporary `Auto-scaling group` inside. **Blue-Green Deployment** keeps the environment immutable by deploying into another environment.
 
-### How it works
+#### How it works
 Blue-Green Deployment is a general modern paradigm that is outside of `Elastic Beanstalk`'s features. It introduces a new, second environment — called `"Green"`. We'll call the first environment `"Blue"`. We'll deploy everything into our **Green environment** as if it's a completely separate app and then swap its `CNAME` with the **Blue environment** once we're happy with the results.
 
 We can take advantage of our full control over the environment here. We have the option to observe it for several days. We could also synergize with `Route53` in order to gradually distribute traffic using `weighted routing policy`, e.g. 90%-10% in the first week to manage user impact gracefully. It's up to us how long we should keep the other environment up and running. Heck, we can even terminate it immediately after the swap or the weighted routing goes to a 100%. Point is, **rollback is within our hands**.
 
-### Step 5.a. Creating your second environment (Green version)
+#### Step 5.a. Creating your second environment (Green version)
 Checkout `green` branch which contains the Green version of the app and then create your second environment using the same steps as before.
 
 Since we're now dealing with multiple environments, it makes sense to link them to the appropriate branches so we can manage our succeeding deployments better.
@@ -244,7 +244,9 @@ branch-defaults:
     group_suffix: null
 ```
 
-### Step 5.c. Swapping environment URLs (Blue-Green deployment)
+##### Elastic Beanstalk Config
+
+#### Step 5.c. Swapping environment URLs (Blue-Green deployment)
 ![Blue-Green deployment](./images/eb-blue-green-deployment.png)  
 **Note:** An alternative to the `eb swap` is via the **Console**.
 <br />
@@ -265,12 +267,12 @@ You should expect to see the `Green` version reflect in your **First environment
 (main)  $ eb open
 ```
 
-#### Warning :warning:
+##### Warning :warning:
 As you know, terminating the entire EB environment also deletes all underlying resources that were created... **including the database**. As best practice, create your database outside of the EB environment and just source it as you would normally do in your code.
 <br /><br />
 And oh, since **Blue-Green deployment** utilizes a `CNAME` swap it's just natural to expect some respectable delays since it will have to propagate over the Public DNS. Okay, I think you should now be able to start picturing its advantages and disadvantages, including the right use cases to apply it. :+1:
 
-## 6. Cleaning Up
+### 6. Cleaning Up
 As a **PaaS** itself, `Elastic Beanstalk` is capable of handling deletion quite well especially that it leverages and utilizes `CloudFormation` under the hood. You shouldn't directly delete any resources created by EB if you don't want to encounter **configuration drifts**. Let the platform do its job. :slightly_smiling_face:
 ```bash
 # Option 1: Terminate specific environment
