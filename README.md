@@ -65,11 +65,11 @@ You will notice right away that it just generated an internal file: `/.elasticbe
 
 ### Step 2. Create your first environment
 Time to create your **first environment**. By default, `eb create` will prompt you to create a `LoadBalanced` environment with these settings:
-  * `Elastic Load Balancer` - fronts your app to receive all the clients requests and forwards to your instances
-  * `Auto-scaling Group` - maintains `1:1:4` capacity settings (desired:min:max) to guarantee that your app will always be running
-**_we don't need that_**.
+  * `Elastic Load Balancer` - fronts your app to receive all the client requests and forwards them to your instances
+  * `Auto-scaling Group` - maintains `1:1:4` (desired:min:max) to keep it running and handle spikes
 
-Let's just spin-up a `single EC2 instance` to minimize costs using `--single`. To further save costs, run a very cheap instance such as `t2.micro` especially if you're **Free Tier** eligible.  
+**_We don't need that_**. Let's just spin up a `single EC2 instance` to minimize costs using `--single`. To further keep them down, run a very cheap instance such as `t2.micro` especially if you're **Free Tier** eligible.
+
 Let's call it `"elastic-beanstalk-sample-app-blue"` for now (_you'll find out later_).
 ```bash
 (main) $ eb create --single --instance-types t2.micro
@@ -93,7 +93,7 @@ Printing Status:
 2020-11-28 17:11:10    INFO    Instance deployment: You didn't specify a Node.js version in the 'package.json' file in your source bundle. The deployment didn't install a specific Node.js version.
 2020-11-28 17:11:16    INFO    Instance deployment completed successfully.
 ```
-Noticed that it still created an `Auto-scaling Group` but with `1:1:1` capacity settings (desired:min:max) just to guarantee that the single instance is **_always up and running_** for us. Cool, isn't it?  
+Notice that it still created an `Auto-scaling Group` but with `1:1:1` capacity settings just to guarantee that the single instance is **_always up and running_** for us. Cool, isn't it?  
 #### Warning :warning:
 This will **incur small charges** to your AWS account if you're not **Free Tier** eligible.
 
