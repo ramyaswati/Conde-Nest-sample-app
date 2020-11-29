@@ -13,7 +13,7 @@ This repo houses a simple `Node` web app using [Mithril JS](expressjs.com/en/sta
     1. via image based from a `Dockerfile` (local)
     1. via image hosted on `Docker Hub` (remote)
 
-## Setting Up
+## Setting up
   1. Configure your AWS credentials locally including the necessary IAM policies for `Elastic Beanstalk`.
   1. Install `EB CLI` by following [the official guide](https://github.com/aws/aws-elastic-beanstalk-cli-setup).
   1. Install `Docker` (used `v19.03.12`) in your Host OS by following [the official guide](https://docs.docker.com/get-docker/).
@@ -223,17 +223,13 @@ Enter DNS CNAME prefix
 `eb use` is nothing more than updating the `/.elasticbeanstalk/config.yml` to hookup our current `green` branch.
 
 #### Checkpoint :busstop:
-Before we proceed, let's recap what we've done so far.
-
-##### Blue version (First environment)
-You've created your first environment named `"elastic-beanstalk-sample-app-blue"` using the source project from `main` branch.
+Before we proceed, let's recap what we've done so far. You've created your first environment named `"elastic-beanstalk-sample-app-blue"` using the source project from `main` branch. 
 ![Blue version](./images/eb-blue-app.png)
 
-##### Green version (Second environment)
-You've also created your second environment named `"elastic-beanstalk-sample-app-green"` using the source project from `green` branch.
+You've also created your second environment named `"elastic-beanstalk-sample-app-green"` using the source project from `green` branch. 
 ![Green version](./images/eb-green-app.png)
 
-##### Elastic Beanstalk Config
+#### Congratulations, you've successfully deployed multiple environments :confetti_ball:
 And here's what your `/.elasticbeanstalk/config.yml` snippet should look like:
 ```yaml
 branch-defaults:
@@ -244,16 +240,8 @@ branch-defaults:
     group_suffix: null
 ```
 
-##### Elastic Beanstalk Config
-
-#### Step 5.c. Swapping environment URLs (Blue-Green deployment)
-![Blue-Green deployment](./images/eb-blue-green-deployment.png)  
-**Note:** An alternative to the `eb swap` is via the **Console**.
-<br />
-Swapping the two environments involve switching their internal `CNAME` records. It is a type of resource in the underlying *DNS record set* which is in a Public zone. Basically, it is where our own client DNS will *resolve* into when we visit the web app in the browser.
-<br />
-You should expect to see the `Green` version reflect in your **First environment** a couple of minutes after a successful `CNAME` swap. :confetti_ball: 
-
+#### Step 5.b. Swapping environment URLs (Blue-Green deployment)
+Swapping the two environments involve switching their internal `CNAME` records. It is a type of resource in the underlying *DNS record set* which is hosted in a Public zone. Basically, it is where our own client DNS will *resolve* into when we visit the web app in the browser.
 ```bash
 # Perform an environment swap
 (green) $ eb swap elastic-beanstalk-sample-app-green --destination_name elastic-beanstalk-sample-app-blue
@@ -266,13 +254,17 @@ You should expect to see the `Green` version reflect in your **First environment
 (green) $ git checkout main
 (main)  $ eb open
 ```
+You should expect to see the `Green` version reflect in your **First environment** a couple of minutes after a successful `CNAME` swap. :confetti_ball:
+
+An alternative to this CLI command is through the **Console**:
+![Blue-Green deployment](./images/eb-blue-green-deployment.png)  
 
 ##### Warning :warning:
 As you know, terminating the entire EB environment also deletes all underlying resources that were created... **including the database**. As best practice, create your database outside of the EB environment and just source it as you would normally do in your code.
-<br /><br />
-And oh, since **Blue-Green deployment** utilizes a `CNAME` swap it's just natural to expect some respectable delays since it will have to propagate over the Public DNS. Okay, I think you should now be able to start picturing its advantages and disadvantages, including the right use cases to apply it. :+1:
 
-### 6. Cleaning Up
+And oh, since **Blue-Green deployment** utilizes a `CNAME` swap it's just natural to expect some respectable delays to allow it to propagate over the Public DNS. Okay, I think you should now be able to start picturing its advantages and disadvantages, including the right use cases to apply it. :+1:
+
+### 6. Cleaning up
 As a **PaaS** itself, `Elastic Beanstalk` is capable of handling deletion quite well especially that it leverages and utilizes `CloudFormation` under the hood. You shouldn't directly delete any resources created by EB if you don't want to encounter **configuration drifts**. Let the platform do its job. :slightly_smiling_face:
 ```bash
 # Option 1: Terminate specific environment
@@ -301,28 +293,28 @@ We previously learned how to deploy simple web apps using `Node.js` as the platf
 
 Time to containerize our app! :package:
 
-### 0. Test sample app locally with Docker
+### Step 0. Test sample app locally with Docker
 Checkout `dockerized` branch then run the ff. commands. Here's a brief **Docker crash course**:
 ```bash
-# To check for running containers
-(dockerized) $ docker ps
+# To build an image based on the Dockerfile on current working directory
+(dockerized) $ docker build --tag beanstalk-sample-app:1.0 .
 
 # To list existing images
 (dockerized) $ docker images
-
-# To build an image based on the Dockerfile on current working directory
-(dockerized) $ docker build --tag beanstalk-sample-app:1.0 .
 
 # To run the container from the image
 # Note: It does a few extra things since we're dealing with a containerized web application such as forwarding the Host OS's port to map inside the container's port.
 (dockerized) $ docker run --env PORT=8080 --publish 8080:8080 beanstalk-sample-app:1.0
 
-# Open your browser
-http://localhost:8080/
+# To check for running containers
+(dockerized) $ docker ps
 ```
-### 1. Initialize your app from the root work directory
-Make sure to checkout `dockerized` branch then initialize the EB app using the same commands. Nothing fancy here. If you terminated your app from the previous section, you should be able to notice that `eb init` regenerates the `/.elasticbeanstalk/config.yml` file. I forgot to mention that it also updates your `.gitignore` to skip some of these files (Beanstalk is that thoughtful). Anyway, EB CLI will notice the `Dockerfile` in root directory then prompt for confirmation.
+Open your browser: http://localhost:8080/
 
+### 1. Initialize your app from the root work directory
+Make sure to checkout `dockerized` branch then initialize the EB app using the same commands. Nothing fancy here.
+
+If you terminated your app from the previous section, you should be able to notice that `eb init` regenerates the `/.elasticbeanstalk/config.yml` file. I forgot to mention that it also updates your `.gitignore` to skip some of these files (Beanstalk is that thoughtful). Anyway, EB CLI will notice the `Dockerfile` in root directory then prompt for confirmation to use **Docker** as platform (instead of `Node.js` like last time):
 ```bash
 (green)      $ git checkout dockerized
 (dockerized) $ eb init 
@@ -346,24 +338,25 @@ Do you want to set up SSH for your instances?
 
 ### 2. Create your environment using local Dockerfile
 Run `eb create --single --instance-types t2.micro` again then EB should **build the image on-the-fly** from the `Dockerfile` which also defines all the necessary config including commands to start the app and port to expose.
-<br />
-You might have also noticed that I've changed `/.ebextensions/env_vars.config` to match the `PORT` environment to `8080` in the `Dockerfile`. Not that it matters to be honest, because again with `Docker` we've defined the port as part of its config. `env_vars.config` is just here to demonstrate EB-specific config we can do, but it's not essential for this section.
 
-Feel free to `eb terminate --all` after playing for awhile.
+You might have also noticed that I've changed `/.ebextensions/env_vars.config` to match the `PORT` environment to `8080` in the `Dockerfile`. Not that it matters to be honest, because again with `Docker` we've defined the port as part of its config. `env_vars.config` is just here to demonstrate EB-specific config we can do, but it's not essential for this section.
 
 #### Congratulations, you've successfully containerized and deployed your app. Way to go! :confetti_ball:
 ![Docker app](./images/eb-docker-app.png)
 
+Feel free to `eb terminate --all` after playing for awhile.
+
 ### 3. Create your environment using remote Docker image (Docker Hub)
-With the previous step, we tasked EB to build the image inside the EC2 instance using the `Dockerfile` as part of the initialization/deployment. You will notice that we still have the **entire codebase** that is necessary to build the `Docker image`. We can go one step further to leverage `Docker` by deploying a hosted image in some known **container registry** such as [Docker Hub](https://hub.docker.com/) which **containerizes** our, well, `config` and `code`.
-<br />
+With the previous step, we tasked `EB` to build the image inside the EC2 instance using the `Dockerfile` as part of the initialization/deployment. You will notice that we still have the **entire codebase** that is necessary to build the `Docker image`. We can go one step further to leverage `Docker` by deploying a hosted image in some known **container registry** such as [Docker Hub](https://hub.docker.com/) which **containerizes** our, well, `config` and `code`.
 
 Checkout `dockerized-remote` branch then you'll see that there aren't pretty much files left other than this special file: `Dockerrun.aws.json`. This must sit at the root project directory since EB will use this to be able to pull any images including additional configurations.
+
 #### Docker Hub (Remote image)
 ![Docker Hub](./images/docker-hub-image.png)
-<br />
-I have **containerized** the entire app and pushed the image into [maronavenue/beanstalk-sample-app:latest](https://hub.docker.com/r/maronavenue/beanstalk-sample-app). It's a public image on `Docker Hub` that can be readily used via `docker pull maronavenue/beanstalk-sample-app`. Alright sir, standard operating procedures!
+
+I have **containerized** the entire app and pushed the image into [maronavenue/beanstalk-sample-app:latest](https://hub.docker.com/r/maronavenue/beanstalk-sample-app). It's a public image on [Docker Hub](https://hub.docker.com/) that can be readily used via `docker pull maronavenue/beanstalk-sample-app`. Alright sir, standard operating procedures!
 ```bash
+(dockerized-remote) $ eb init
 (dockerized-remote) $ eb create --single --instance-types t2.micro
 Enter Environment Name
 (default is elastic-beanstalk-sample-app-dev): elastic-beanstalk-sample-app-dockerized
@@ -375,19 +368,24 @@ Creating application version archive "app-812e-201128_145846".
 Uploading elastic-beanstalk-sample-app/app-812e-201128_145846.zip to S3. This may take a while.
 Upload Complete.
 Environment details for: elastic-beanstalk-sample-app-dockerized
-  Region:
-  Deployed Version:
-  Environment ID:
-  Platform:
-  Tier:
-  CNAME:
-  Updated:
+  Application name: elastic-beanstalk-sample-app
+  Region: your-region
+  # Truncated...
 Printing Status:
 2020-11-28 06:58:49    INFO    createEnvironment is starting.
-...
+# Truncated...
 2020-11-28 07:01:24    INFO    Instance deployment completed successfully.
 
 (dockerized-remote) $ eb status
 
 (dockerized-remote) $ eb open
 ```
+
+## What's next
+Reminder to cleanup your AWS resources by running `eb terminate --all` after you're done tinkering around. Now that you can manage multiple environments on `Elastic Beanstalk` you can start building real-life applications! :hammer_and_wrench:
+  - [] Build and integrate a database using Amazon [RDS](https://aws.amazon.com/rds/) for `SQL` and [DynamoDB](https://aws.amazon.com/dynamodb/) for `NoSQL`
+  - [] Get your own domain and create an alias record pointing to the CNAME of your environment — all using Amazon [Route 53](https://docs.aws.amazon.com/Route53/latest/DeveloperGuide/routing-to-beanstalk-environment.html)
+  - [] Create production-grade environments using `LoadBalanced` as the type and override configurations to your liking
+
+## Contributing
+If you liked this guide and wish to contribute more yourself, please checkout this main repo: [maronavenue/aws-learning-path](https://github.com/maronavenue/aws-learning-path) 
