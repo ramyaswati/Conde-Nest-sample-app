@@ -66,9 +66,9 @@ You will notice right away that it just generated an internal file: `/.elasticbe
 ### Step 2. Create your first environment
 Time to create your **first environment**. By default, `eb create` will prompt you to create a `LoadBalanced` environment with these settings:
   * `Elastic Load Balancer` - fronts your app to receive all the client requests and forwards them to your instances
-  * `Auto-scaling Group` - maintains `1:1:4` (desired:min:max) to keep it running and handle spikes
+  * `Auto-scaling Group` - maintains `1:1:4` (desired:min:max) to keep it running and handle spikes to an extent
 
-**_We don't need that_**. Let's just spin up a `single EC2 instance` to minimize costs using `--single`. To further keep them down, run a very cheap instance such as `t2.micro` especially if you're **Free Tier** eligible.
+**_We don't need that_**. Let's just spin up a single EC2 instance to minimize costs using `--single`. To further keep them down, run a very cheap instance such as `t2.micro` especially if you're **Free Tier** eligible.
 
 Let's call it `"elastic-beanstalk-sample-app-blue"` for now (_you'll find out later_).
 ```bash
@@ -98,7 +98,8 @@ Notice that it still created an `Auto-scaling Group` but with `1:1:1` capacity s
 This will **incur small charges** to your AWS account if you're not **Free Tier** eligible.
 
 ## Step 3. Verify your environment
-Monitor the deployment using `eb status`. Pay attention to **Status** and **Health** as they should dictate if the deployment has completed successfully.  
+Monitor the deployment using `eb status`. Pay attention to **Status** and **Health** as they should indicate if the it has completed successfully.
+
 You can also check it interactively through the `EB Console`. There are also tons of information available about the environment such as **Events** and **Logs**.
 ```bash
 (main) $ eb status
@@ -126,14 +127,17 @@ Nov 28 17:11:16 ip-1-2-3-4 web: > node index.js
 Nov 28 17:11:16 ip-1-2-3-4 web: Sample app listening on port 8081...
 # Truncated...
 ```
-**Congratulations, you've successfully deployed your first environment. :confetti_ball:** One convenient way to open your app from CLI is via `eb open`.  
-Aside from navigating through these information, I recommend checking out the underlying resources that got created in order to truly appreciate the power of `Elastic Beanstalk` (and `CloudFormation` which is actually responsible for their creation).  
-Here are some resources listed in  the `CloudFormation Stack`:  
-&nbsp;&nbsp;:white_check_mark: `Auto-scaling Group` - maintains a single EC2 instance  
-&nbsp;&nbsp;:white_check_mark: `Elastic IP` - attaches to the instance to become publicly available in the Internet  
-&nbsp;&nbsp;:white_check_mark: `Security Group` - allows `HTTP/TCP` access on port 80
-<br /><br />
-**_Huh!?_ But why port `80`, if our `Node.js ` web server is listening to port `8081`?** You have sharp eyes :eyes:. Let's get back to that shortly...
+**Congratulations, you've successfully deployed your first environment. :confetti_ball:**
+
+One convenient way to open your app from CLI is via `eb open`. Aside from navigating through these information, I recommend checking out the underlying resources that got created in order to truly appreciate the power of `Elastic Beanstalk` (and `CloudFormation` which is actually responsible for their creation).
+
+Here are some resources tracked by the **CloudFormation Stack**:
+  - [x] `Auto-scaling Group` - maintains a single EC2 instance
+  - [x] `Elastic IP` - attaches to the instance to become publicly available in the Internet
+  - [x] `Security Group` - allows `HTTP/TCP` access on port `80`
+**_Huh!?_ But why port `80` if our `Node.js ` web server is listening to port `8081`?**
+
+You have sharp eyes :eyes:. Let's get back to that shortly...
 
 ### Elastic Beanstalk configuration settings
 Deploying our web apps became so much easier and that's because `EB` assumed a lot of [default configurations](https://docs.aws.amazon.com/elasticbeanstalk/latest/dg/command-options-general.html#command-options-general-elasticbeanstalkapplicationenvironment) for our environment. Of course, dealing with production apps will become much more *involved*. And for us to dabble into them:
@@ -142,13 +146,16 @@ Deploying our web apps became so much easier and that's because `EB` assumed a l
   * This is why the `Node.js` app picked up port `8081`.
 
 ### 8081 vs 80
-With that set aside, **_why can we talk to the web app if ports don't match?_**  This detail is out of scope, but `Elastic Beanstalk` what's known as a `reverse proxy` using `nginx` or `Apache HTTPD` which listens to port `80` to map multiple applications and forward traffic to internal ports away from the client. Simply put, it enables us to use the same port (`80`) for multiple applications (`8080`, `8081`, `8082`, etc).  
-See the [documentation](https://docs.aws.amazon.com/elasticbeanstalk/latest/dg/nodejs-platform-proxy.html) for more details.  
-<br /><br />
+With that set aside, **_why can we talk to the web app if ports don't match?_**
+
+This detail is out of scope, but `Elastic Beanstalk` uses what's known as a **reverse proxy server** using `nginx` or `Apache HTTPD` which listens to port `80` to map multiple applications and forward traffic using different internal ports that are abstracted from the client side. Simply put, it enables us to use the same port (`80`) for multiple applications listening to different ports (`8080`, `8081`, `8082`, etc) in the same server.
+
+Read up the [documentation](https://docs.aws.amazon.com/elasticbeanstalk/latest/dg/nodejs-platform-proxy.html) to find out more.
+
 Enough networking. What if we want to make new changes into our web app? :raised_eyebrow:
 
 ## Step 4. Deploy new versions using common policies
-EB uses `All-At-Once` as the default deployment policy which directly deploys the changes into the instance/s, hence the app is expected to go **_out-of-service_** until the deployment has completed. By nature of changing the same running instance/s, we define this as `mutable`. There are other similar mutable deployments such as `Rolling`, but we'll take a look at `Immutable` in this example. Deployment policy can be configured in `/.ebextensions/` (_you guessed right_).
+EB uses `All-At-Once` as the default deployment policy which directly deploys the changes into the instance/s, hence the app is expected to go **_out-of-service_** until the deployment has completed. By nature of changing the same running instance/s, we define this as **_"mutable"_**. There are other similar mutable deployments such as `Rolling`, but we'll take a look at `Immutable` in this example. Deployment policy can be configured in `/.ebextensions/` (_you guessed right_).
 
 ### Step 4.a. Immutable
 You will notice that there's already an `/.ebextensions/deployment_policy.config`. Yes, you don't have to do anything since the policy was already overridden to `Immutable`. Modify `/public/app.js` to simulate a change in the frontend. Be sure to commit and push your changes prior to actual deployment. Deploy the changes in the current environment using `eb deploy`.
