@@ -383,9 +383,9 @@ Printing Status:
 
 ## What's next
 Reminder to cleanup your AWS resources by running `eb terminate --all` after you're done tinkering around. Now that you can manage multiple environments on `Elastic Beanstalk` you can start building real-life applications! :hammer_and_wrench:
-  - [ ] Build and integrate a database using [RDS](https://aws.amazon.com/rds/) for `SQL` and [DynamoDB](https://aws.amazon.com/dynamodb/) for `NoSQL`
-  - [ ] Get a domain and create an **alias record** pointing to the `CNAME` of your environment — all using [Route 53](https://docs.aws.amazon.com/Route53/latest/DeveloperGuide/routing-to-beanstalk-environment.html)
-  - [ ] Create production-grade environments using `LoadBalanced` as the type and override configurations to your liking
+  - [ ] Build and integrate a **database** using [RDS](https://aws.amazon.com/rds/) for `SQL` and [DynamoDB](https://aws.amazon.com/dynamodb/) for `NoSQL`
+  - [ ] Get a **domain** and create an **alias record** pointing to the `CNAME` of your environment — all using [Route 53](https://docs.aws.amazon.com/Route53/latest/DeveloperGuide/routing-to-beanstalk-environment.html)
+  - [ ] Create **production-grade** environments using `LoadBalanced` as the type and override configurations to your liking
 
 ## Contributing
-If you happen to like this guide and wish to contribute more good stuff yourself, please checkout this main repo: [maronavenue/aws-learning-path](https://github.com/maronavenue/aws-learning-path)
+Pull requests are wellcome. If you happen to like this guide and wish to contribute more good stuff yourself, please checkout this main repo: [maronavenue/aws-learning-path](https://github.com/maronavenue/aws-learning-path)
