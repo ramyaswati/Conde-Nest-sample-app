@@ -4,7 +4,7 @@
 ## Prologue
 This repo houses a simple `Node` web app using [Mithril JS](expressjs.com/en/starter/hello-world.html) and [Express JS](https://expressjs.com/en/starter/hello-world.html) for the frontend and backend pieces. You should be able to read along the code and easily pick up what going on. We'll use this app to play around Beanstalk.
 
-### What you'll learn
+## What you'll learn
   * Build an `Elastic Beanstalk` **application** and create multiple **environments** for your dev workflow
   * Deploy new versions into your environments using `mutable` and `immutable` **deployment policies**
   * Learn and perform `Blue-Green deployment`
@@ -183,29 +183,28 @@ This is why it's noticably longer (and will cost us a bit more), but you can ima
 There is **no downtime** as well. Personally, I like this deployment policy for my production-grade applications. :+1:
 
 ### Step 4.b. All-At-Once
-I know we glossed over this guy, but just `git rm /.ebextensions/deployment_policy.config` then modify `/public/app.js` again for yet another change. Please keep the "Blue version" in the `h1` title as is for now, okay? We'll use that to demonstrate the next section. Again, don't forget to **commit and push** your changes so `EB` will recognize them then hit `eb deploy`.
+I know we glossed over this guy, but just `git rm /.ebextensions/deployment_policy.config` then modify `/public/app.js` again for yet another change. Please keep the "Blue version" in the `h1` title as is for now, okay? We'll use that to demonstrate the next section. Commit and push your changes then hit `eb deploy`.
 
 You will eventually notice that it's way faster, but your app goes down for a bit of time. This deployment policy is okay if you or your users **can tolerate downtime**. This is the most cost-effective deployment too.
 
 I like to standby on the `EC2 Console` just to compare how both deployment policies take down the running instances. `Try it too.`
 
 ## Step 5. Blue-Green Deployment :ballot_box_with_check::white_check_mark:
-Now that we're at the topic of `Immutable` deployments, we can see and understand that it operates **within the context of running instances**. Now, let's look at the bigger picture: how about we look at our project **within the context of environments**?
+With `Immutable` deployments, we can see and understand that it operates **within the context of running instances**. Now, let's look at the bigger picture: how about we look at our project **within the context of environments**?
 
-_It suddenly changes things._ We can now logically say that it is **no longer** `Immutable` because it makes changes into the **same environment**, albeit it creates new `Auto-scaling groups` inside.
+_It suddenly changes things, right?_ We can now logically say that it is **no longer** `Immutable` because it makes changes into the **same environment**, albeit it creates a new temporary `Auto-scaling group` inside. **Blue-Green Deployment** keeps the environment immutable by deploying into another environment.
 
 ### How it works
-**Blue-Green Deployment** is a general modern paradigm that is outside of `Elastic Beanstalk`'s features. It introduces a new, second environment — called `"Green"`. We'll call the first environment `"Blue"`. We'll deploy everything into our **Green environment** as if it's a completely separate app and then swap its `CNAME` with the **Blue environment** once we're happy with the results.
+Blue-Green Deployment is a general modern paradigm that is outside of `Elastic Beanstalk`'s features. It introduces a new, second environment — called `"Green"`. We'll call the first environment `"Blue"`. We'll deploy everything into our **Green environment** as if it's a completely separate app and then swap its `CNAME` with the **Blue environment** once we're happy with the results.
 
 We can take advantage of our full control over the environment here. We have the option to observe it for several days. We could also synergize with `Route53` in order to gradually distribute traffic using `weighted routing policy`, e.g. 90%-10% in the first week to manage user impact gracefully. It's up to us how long we should keep the other environment up and running. Heck, we can even terminate it immediately after the swap or the weighted routing goes to a 100%. Point is, **rollback is within our hands**.
 
 ### Step 5.a. Creating your second environment (Green version)
-Since we're going to deal with multiple environments, let's inform `EB` by linking our first environment (Blue version) to our current `main` branch. Then, we checkout the `green` branch which contains the Green version that we shall deploy into a second environment:
-```bash
-# Link your first environment (Blue) to the main branch
-# This just tells EB to deploy into this environment when making changes into this branch
-(main)  $ eb use elastic-beanstalk-sample-app-blue
+Checkout `green` branch which contains the Green version of the app and then create your second environment using the same steps as before.
 
+Since we're now dealing with multiple environments, it makes sense to link them to the appropriate branches so we can manage our succeeding deployments better.
+```bash
+# Create second environment
 (main)  $ git checkout green
 (green) $ eb init
 (green) $ eb create --single --instance-types t2.micro
@@ -215,16 +214,35 @@ Enter DNS CNAME prefix
 (default is elastic-beanstalk-sample-app-green):
 # Truncated...
 
-# Link your second environment (Green) to the green branch
-# Linking is just simply being tracked by EB in: /.elasticbeanstalk/config.yml, nothing more
+# Link second environment to 'green' branch
 (green) $ eb use elastic-beanstalk-sample-app-green
 
-# Green version should be displayed in the title of the web app
+# Green version title should show up in the web app
 (green) $ eb open
 ```
+`eb use` is nothing more than updating the `/.elasticbeanstalk/config.yml` to hookup our current `green` branch.
 
-### Step 5.b. Swapping environment URLs (Blue-Green deployment)
+#### Checkpoint :busstop:
+Before we proceed, let's recap what we've done so far.
 
+##### Blue version (First environment)
+You've created your first environment named `"elastic-beanstalk-sample-app-blue"` using the source project from `main` branch.
+![Blue version](./images/eb-blue-app.png)
+
+##### Green version (Second environment)
+You've also created your second environment named `"elastic-beanstalk-sample-app-green"` using the source project from `green` branch.
+![Green version](./images/eb-green-app.png)
+
+##### Elastic Beanstalk Config
+And here's what your `/.elasticbeanstalk/config.yml` snippet should look like:
+```yaml
+branch-defaults:
+  green:
+    environment: elastic-beanstalk-sample-app-green
+  main:
+    environment: elastic-beanstalk-sample-app-blue
+    group_suffix: null
+```
 
 ### Step 5.c. Swapping environment URLs (Blue-Green deployment)
 ![Blue-Green deployment](./images/eb-blue-green-deployment.png)  
@@ -251,17 +269,6 @@ You should expect to see the `Green` version reflect in your **First environment
 As you know, terminating the entire EB environment also deletes all underlying resources that were created... **including the database**. As best practice, create your database outside of the EB environment and just source it as you would normally do in your code.
 <br /><br />
 And oh, since **Blue-Green deployment** utilizes a `CNAME` swap it's just natural to expect some respectable delays since it will have to propagate over the Public DNS. Okay, I think you should now be able to start picturing its advantages and disadvantages, including the right use cases to apply it. :+1:
-
-### Blue version (First environment)
-![Blue version](./images/eb-blue-app.png)
-<br />
-**Note:** This is before swapping.
-
-### Green version (Second environment)
-![Green version](./images/eb-green-app.png)
-<br />
-**Note:** This is before swapping.
-
 
 ## 6. Cleaning Up
 As a **PaaS** itself, `Elastic Beanstalk` is capable of handling deletion quite well especially that it leverages and utilizes `CloudFormation` under the hood. You shouldn't directly delete any resources created by EB if you don't want to encounter **configuration drifts**. Let the platform do its job. :slightly_smiling_face:
@@ -341,9 +348,8 @@ Run `eb create --single --instance-types t2.micro` again then EB should **build 
 You might have also noticed that I've changed `/.ebextensions/env_vars.config` to match the `PORT` environment to `8080` in the `Dockerfile`. Not that it matters to be honest, because again with `Docker` we've defined the port as part of its config. `env_vars.config` is just here to demonstrate EB-specific config we can do, but it's not essential for this section.
 
 Feel free to `eb terminate --all` after playing for awhile.
-#### Your first Docker app on Elastic Beanstalk
-**Congratulations, you've successfully containerized and deployed your app. Way to go! :confetti_ball:**
-<br />
+
+#### Congratulations, you've successfully containerized and deployed your app. Way to go! :confetti_ball:
 ![Docker app](./images/eb-docker-app.png)
 
 ### 3. Create your environment using remote Docker image (Docker Hub)
