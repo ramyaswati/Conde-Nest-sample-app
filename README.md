@@ -127,8 +127,8 @@ Nov 28 17:11:16 ip-1-2-3-4 web: > node index.js
 Nov 28 17:11:16 ip-1-2-3-4 web: Sample app listening on port 8081...
 # Truncated...
 ```
-**Congratulations, you've successfully deployed your first environment. :confetti_ball:**
 
+### Congratulations, you've successfully deployed your first environment. :confetti_ball:
 One convenient way to open your app from CLI is via `eb open`. Aside from navigating through these information, I recommend checking out the underlying resources that got created in order to truly appreciate the power of `Elastic Beanstalk` (and `CloudFormation` which is actually responsible for their creation).
 
 Here are some resources tracked by the **CloudFormation Stack**:
@@ -189,10 +189,14 @@ You will eventually notice that it's way faster, but your app goes down for a bi
 
 I like to standby on the `EC2 Console` just to compare how both deployment policies take down the running instances. `Try it too.`
 
-## 5. Blue-Green Deployment
-Now that we're at the topic of `Immutable` deployments, we can see and understand that it operates **within the context of running instances**. Now, let's look at the bigger picture: how about we look at our project **within the context of environments**?  
-_It suddenly changes things._ We can now logically say that it is **no longer** `Immutable` because it makes changes into the **same environment**, albeit it creates new `Auto-scaling groups` inside.  
-**Blue-Green Deployment** is a general modern paradigm that is outside of `Elastic Beanstalk`'s features. It introduces a new, second environment — called `"Green"`. We'll call the first environment `"Blue"`. We'll deploy everything into our `Green` environment as if it's a completely separate app and then swap its `CNAME` with the `Blue` environment once we're happy with its behavior.  
+## 5. Blue-Green Deployment :ballot_box_with_check::white_check_mark:
+Now that we're at the topic of `Immutable` deployments, we can see and understand that it operates **within the context of running instances**. Now, let's look at the bigger picture: how about we look at our project **within the context of environments**?
+
+_It suddenly changes things._ We can now logically say that it is **no longer** `Immutable` because it makes changes into the **same environment**, albeit it creates new `Auto-scaling groups` inside.
+
+### How it works
+**Blue-Green Deployment** is a general modern paradigm that is outside of `Elastic Beanstalk`'s features. It introduces a new, second environment — called `"Green"`. We'll call the first environment `"Blue"`. We'll deploy everything into our **Green environment** as if it's a completely separate app and then swap its `CNAME` with the **Blue environment** once we're happy with the results.
+
 We can take advantage of our full control over the environment here. We have the option to observe it for several days. We could also synergize with `Route53` in order to gradually distribute traffic using `weighted routing policy`, e.g. 90%-10% in the first week to manage user impact gracefully. It's up to us how long we should keep the other environment up and running. Heck, we can even terminate it immediately after the swap or the weighted routing goes to a 100%. Point is, rollback is within our hands.
 ### Let's try it out
 ```bash
