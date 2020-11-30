@@ -2,7 +2,7 @@
 ![EB Banner](./images/eb-banner.jpg)
 
 ## Prologue
-This repo houses a simple `Node` web app using [Mithril JS](expressjs.com/en/starter/hello-world.html) and [Express JS](https://expressjs.com/en/starter/hello-world.html) for the frontend and backend components. You should be able to read along the code and easily pick up what's going on. We'll use this app to play around Beanstalk.
+This repo houses a simple `Node` web app using [Mithril JS](expressjs.com/en/starter/hello-world.html) and [Express JS](https://expressjs.com/en/starter/hello-world.html) for the frontend and backend pieces. You should be able to read along the code and easily pick up what's going on. We'll use this app to play around Beanstalk.
 
 ## What you'll learn
   * Build an `Elastic Beanstalk` **application** and create multiple **environments** for your dev workflow
